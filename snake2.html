@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+<style>
+    .box {
+        background: #FFF;
+        width: 15px;
+        height: 15px;
+        border: 1px solid #000;
+    }
+
+    .snake {
+        background: #F00;
+        width: 15px;
+        height: 15px;
+        border: 1px solid white;
+    }
+
+    .food {
+        background: #0F0;
+        width: 15px;
+        height: 15px;
+        border: 1px solid white;
+    }
+
+    #test {
+        position: absolute;
+        left: 30px;
+        top: 30px;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .scoreSnake {
+        position: absolute;
+        left: 821px;
+        top: 89px;
+    }
+</style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<head>
+    <h1>Snake 2</h1>
+</head>
+<script type="text/javascript">
+    Array.prototype.indexOf = function (val) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i] == val) return i;
+        }
+        return -1;
+    };
+    Array.prototype.remove = function (val) {
+        var index = this.indexOf(val);
+        if (index > -1) {
+            this.splice(index, 1);
+        }
+    };
+
+    var speed = 400;
+    var row = 20;
+    var col = 20;
+    var body = [{'x': null, 'y': null}];
+    var foodx = null;
+    var foody = null;
+    var next_x;
+    var next_y;
+    var direction = 'PAUSE';  //u, d, l, r
+    var dtime;
+    var score=0;
+
+    function createTable(r, c) {
+        var o = document.body;
+        var table = document.createElement("table");
+        var tbody = document.createElement("tbody");
+        //table.border = 1;
+        table.setAttribute("class", "box");
+        //table.class = 'box';
+        for (var i = 0; i <= r; i++) {
+            var tr = document.createElement("tr");
+            for (var j = 0; j <= c; j++) {
+                var td = document.createElement("td");
+                var td_id = j + "." + i;
+                td_id = td_id;
+                td.innerHTML = '&nbsp;&nbsp;';
+                td.id = td_id;
+                td.setAttribute("class", "box");
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        o.appendChild(table);
+    }
+
+    function init_snake() {
+        //put snake//put food
+        while (body[0]['x'] == foodx && body[0]['y'] == foody) {//确保蛇头和食物不出现在同一点上
+            body[0]['x'] = Math.floor(Math.random() * row);
+            body[0]['y'] = Math.floor(Math.random() * col);
+            foodx = Math.floor(Math.random() * row);
+            foody = Math.floor(Math.random() * col);
+        }
+        document.getElementById(body[0]['x'] + '.' + body[0]['y']).setAttribute("class", 'snake');
+        document.getElementById(foodx + '.' + foody).setAttribute("class", 'food');
+        console.info('inti map ok');
+    }
+
+    function get_direction() {
+        document.onkeydown = function (e) {
+            //get key input
+            var ev = e || window.event;
+            code = ev.keyCode;
+            var new_direction;
+            if (code == 39 && direction != 'l'){
+                direction = 'r'
+            } else if (code == 37 && direction != 'r'){
+                direction = 'l'
+            } else if (code == 38 && direction != 'd') {
+                direction = 'u'
+            } else if (code == 40 && direction != 'u') {
+                direction = 'd'
+            } else {
+                //any key to pause
+                direction = 'PAUSE'
+            }
+        }
+
+    }
+
+    function create_food() {
+        var x_list = [];
+        var y_list = [];
+        for (var i = 0; i <= col; i++){
+            x_list.push(i);
+        }
+        for (var ii = 0; ii <= row; ii++){
+            y_list.push(ii);
+        }
+        //console.info(x_list, y_list);
+        for (var n in body) {
+            x_list.remove(body[n]['x']);
+            y_list.remove(body[n]['y']);
+        }
+        var x_index = Math.floor(Math.random() * 10) % x_list.length;
+        var y_index = Math.floor(Math.random() * 10) % y_list.length;
+        foodx = x_list[x_index];
+        foody = y_list[y_index];
+        //console.info(foodx, foody);
+        document.getElementById(foodx + '.' + foody).setAttribute('class', 'food');
+    }
+
+    function rush() {
+        var next_cls = document.getElementById(next_x + '.' + next_y).classList[0];
+        body.unshift({'x': next_x, 'y': next_y});
+        document.getElementById(next_x + '.' + next_y).setAttribute('class','snake');
+        if (next_cls == 'box') {
+            var tail = body.pop();
+            document.getElementById(tail['x'] + '.' + tail['y']).setAttribute('class','box');
+        } else if (next_cls == 'food') {
+            score += 100;
+            $('#score').text(score);
+            create_food();
+        }else{
+
+        }
+
+    }
+
+    function move() {
+        // console.info(direction);
+        next_x = body[0]['x'];
+        next_y = body[0]['y'];
+        if (direction == 'r') {
+            next_x = body[0]['x'] + 1;
+        }
+        if (direction == 'l') {
+            next_x = body[0]['x'] - 1;
+        }
+        if (direction == 'u') {
+            next_y = body[0]['y'] - 1;
+        }
+        if (direction == 'd') {
+            next_y = body[0]['y'] + 1;
+        }
+        rush();
+    }
+
+    function run() {
+        get_direction();
+        if (direction != 'PAUSE') {
+            move();
+        }
+    }
+
+    $(function () {
+        createTable(row, col);
+        init_snake();
+        //run game
+        dtime = setInterval("run()", speed);
+    });
+
+
+</script>
+
+
+<body>
+
+</table>
+
+<div class="scoreSnake"><span id="score" style="color:red;left:">0</span> <span>分</span></div>
+
+</body>
+</html>
+
+
